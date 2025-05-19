@@ -1,0 +1,57 @@
+.wrap {
+  position: relative;
+  width: 45vw;
+  height: 100vh;
+  overflow: hidden;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transform: translateZ(0);
+  background-color: rgba(203, 203, 203, 0.176);
+  &::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 40%;
+    height: 100%;
+    background: linear-gradient(
+      90deg,
+      rgba(255, 255, 255, 0.9) 0%,
+      rgba(255, 255, 255, 0) 100%
+    );
+    pointer-events: none;
+    z-index: 1;
+    border-radius: 0 12px 12px 0;
+  }
+}
+
+.background {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-size: cover;
+  background-position: center;
+  will-change: transform, opacity;
+  filter: blur(1.5px);
+  text-shadow: 0 0 8px rgba(255, 255, 255, 0.3);
+  backdrop-filter: blur(2px);
+  background-color: rgba(0, 0, 0, 0.2);
+}
+
+.content {
+  position: absolute;
+  z-index: 1;
+  padding: 2rem;
+  background-color: transparent;
+  border-radius: 12px;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  font-size: 32px;
+  font-weight: 500;
+  color: rgba(0, 0, 0, 0.534);
+}
