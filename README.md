@@ -1,36 +1,118 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+Patient Registration App
+A frontend-only patient registration application built with Next.js, TypeScript, and PGlite (a lightweight PostgreSQL database running in the browser with IndexedDB persistence). The app currently supports user authentication with email-based login, cookie-based session management, and route protection via Next.js middleware. Future features will include patient registration and a dashboard for managing patient data.
+Features
 
-## Getting Started
+Authentication:
+Email-based login (e.g., info@admin.com with password password).
+Cookie-based session management, expiring at 23:59:59 IST daily to avoid re-login within the same day.
+Protected routes (/register, /dashboard) using Next.js middleware.
+Logout functionality to clear session cookies.
 
-First, run the development server:
 
-```bash
+Database:
+PGlite with IndexedDB (idb://patient-registration-app) for persistent storage.
+users table for authentication (email, password).
+patients table for future patient data (id, name, email, phone, dob, status, registered_date).
+
+
+UI:
+Ant Design for form components and styling.
+SCSS modules for custom styles (form-box.module.scss).
+
+
+
+Planned Features
+
+Patient registration form to add patients to the patients table.
+Dashboard to view and manage patient data.
+Cross-tab synchronization using BroadcastChannel for real-time updates.
+
+Prerequisites
+
+Node.js: v18 or higher.
+npm: v9 or higher.
+A modern browser (Chrome, Firefox, Edge) with IndexedDB support.
+
+Setup Instructions
+
+Clone the Repository:
+git clone https://github.com/your-username/patient-registration-app.git
+cd patient-registration-app
+
+
+Install Dependencies:
+npm install
+
+This installs required packages: @electric-sql/pglite, next, react, antd, js-cookie, uuid, nextjs-toploader, and dev dependencies.
+
+Clear IndexedDB (if updating schema):
+
+If you encounter errors like column "email" does not exist, clear the IndexedDB database:
+Open your browser’s DevTools (F12).
+Go to Application > Storage > IndexedDB.
+Find patient-registration and delete it.
+
+
+Alternatively, run the app and visit /auth to reinitialize the database.
+
+
+Run the Development Server:
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open http://localhost:3000/auth in your browser.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Usage
 
-## Learn More
+Login:
 
-To learn more about Next.js, take a look at the following resources:
+Navigate to http://localhost:3000/auth.
+Use the default credentials:
+Email: info@admin.com
+Password: password
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Successful login redirects to /register (currently unimplemented, shows 404).
+The session persists until 23:59:59 IST (end of the day) via cookies.
 
-## Deploy on Vercel
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+Logout:
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+On the /auth page, click the “Logout” button to clear the session and stay on /auth.
+
+
+Route Protection:
+
+Accessing /register or /dashboard without logging in redirects to /auth.
+After login, these routes are accessible (though not yet implemented).
+
+
+Testing:
+
+Verify cookies in DevTools (Application > Cookies) for session_token and email.
+Test persistence by closing and reopening the browser within the same day.
+Simulate session expiration by editing cookie expiration to a past date.
+
+Dependencies
+
+Core: next@14.2.3, react@18, react-dom@18
+Database: @electric-sql/pglite@0.2.2
+UI: antd@5.0.0, nextjs-toploader@1.6.12
+Auth: js-cookie@3.0.5, uuid@10.0.0
+Dev: @types/node@20, @types/react@18, @types/js-cookie@3.0.6, @types/uuid@10.0.0, typescript@5
+
+Contributing
+
+Fork the repository.
+Create a feature branch (git checkout -b feature/your-feature).
+Commit changes (git commit -m "Add your feature").
+Push to the branch (git push origin feature/your-feature).
+Open a Pull Request.
+
+Please ensure code follows the project’s style (TypeScript, SCSS modules) and includes tests for new features.
+License
+This project is licensed under the MIT License. See the LICENSE file for details.
+Contact
+For issues or questions, open a GitHub issue or contact vidhu0dev@gmail.com.
+
+Built with ❤️ using Next.js and PGlite.

@@ -46,8 +46,8 @@ const SideBar = () => {
         />
       </AnimatePresence>
       <div className={styles.content}>
-        <h2>Patient-Care</h2>
-        <p>your health, our priority</p>
+        <h2>We-Care</h2>
+        <h4>Patient Management system</h4>
       </div>
     </div>
   );

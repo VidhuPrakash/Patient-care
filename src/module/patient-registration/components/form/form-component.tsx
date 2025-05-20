@@ -3,6 +3,8 @@ import TextArea from "antd/es/input/TextArea";
 import styles from "./form-component.module.scss";
 import { Form, Button, Select } from "antd";
 import dynamic from "next/dynamic";
+import { useRouter } from "nextjs-toploader/app";
+import { logout } from "@/module/auth/service/auth";
 
 const Input = dynamic(() => import("antd").then((mod) => mod.Input), {
   ssr: false,
@@ -13,14 +15,29 @@ const DatePicker = dynamic(() => import("antd").then((mod) => mod.DatePicker), {
 
 const FormComponent = () => {
   const [form] = Form.useForm();
+  const router = useRouter();
 
   const onFinish = (values: any) => {
     console.log("Received values:", values);
     // Add your submission logic here
   };
 
+  const handleListPatient = () => {
+    router.push("/dashboard");
+  };
+
+  const handleLogout = async () => {
+    await logout();
+    router.push("/");
+  };
+
   return (
     <div className={styles.wrap}>
+      <div className={styles.headr}>
+        <Button className={styles.logout} type="primary" onClick={handleLogout}>
+          Logout
+        </Button>
+      </div>
       <Form
         form={form}
         name="patient-registration"
@@ -126,6 +143,14 @@ const FormComponent = () => {
             </Button>
           </div>
         </Form.Item>
+        <Button
+          className={styles.buttonCheck}
+          onClick={handleListPatient}
+          type="dashed"
+          size="large"
+        >
+          Check patients details
+        </Button>
       </Form>
     </div>
   );

@@ -4,6 +4,17 @@
   height: 100vh;
   width: 100vw;
   position: relative;
+  display: flex;
+  justify-content: end;
+  .content {
+    display: flex;
+    flex-direction: column;
+  }
+  .title {
+    margin-right: 30px;
+    font-size: 48px;
+    font-weight: 700;
+  }
   &::before {
     content: "";
     position: absolute;
