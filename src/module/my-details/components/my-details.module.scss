@@ -27,3 +27,29 @@
     }
   }
 }
+.buttonsWrap {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  .rightButton {
+    display: flex;
+    gap: 6px;
+    .delete {
+      background-color: red;
+      color: white;
+      &:hover {
+        background-color: red !important;
+        color: white !important;
+      }
+    }
+  }
+}
+.modalTitle {
+  font-size: 28px;
+  font-weight: 600;
+  color: #2d3748;
+  text-align: center;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}

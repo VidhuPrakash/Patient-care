@@ -7,9 +7,13 @@ import dayjs from "dayjs";
 import styles from "./my-details.module.scss";
 import { useRouter } from "nextjs-toploader/app";
 import { logout } from "@/module/auth/service/auth";
+import { useListPatients } from "../services/list-patients-service";
+import TextArea from "antd/es/input/TextArea";
+import { useUpdatePatient } from "../services/update-patient-service";
+import { useDeletePatient } from "../services/delete-patient-service";
 
 const { useApp } = App;
-// Dynamic imports for SSR-sensitive components
+
 const Modal = dynamic(() => import("antd").then((mod) => mod.Modal), {
   ssr: false,
 });
@@ -26,44 +30,38 @@ const Select = dynamic(() => import("antd").then((mod) => mod.Select), {
 const { Column } = Table;
 
 interface Patient {
-  id: string;
+  id: number;
   name: string;
   email: string;
   phone: string;
   dob: Date;
   status: "Active" | "Inactive" | "Pending";
+  gender: string;
+  address: string;
+  medicalHistory: string;
   registeredDate: Date;
 }
 
-const PatientsDashboard = () => {
-  const [patients, setPatients] = useState<Patient[]>([]);
+const MyDetails = () => {
   const [selectedPatient, setSelectedPatient] = useState<Patient | null>(null);
   const [isModalVisible, setIsModalVisible] = useState(false);
+  const { patients, loading, error, loadPatients } = useListPatients();
+  const {
+    deletePatient,
+    loading: deleteLoading,
+    error: deleteError,
+  } = useDeletePatient();
+  const {
+    updatePatient,
+    loading: updateLoading,
+    error: updateError,
+  } = useUpdatePatient();
   const [form] = Form.useForm();
   const route = useRouter();
   const { message } = useApp();
   // Simulated data fetch
   useEffect(() => {
-    setPatients([
-      {
-        id: "1",
-        name: "John Doe",
-        email: "john@example.com",
-        phone: "+1 (555) 123-4567",
-        dob: new Date("1985-04-23"),
-        status: "Active",
-        registeredDate: new Date("2023-01-15"),
-      },
-      {
-        id: "2",
-        name: "John Doe",
-        email: "john@example.com",
-        phone: "+1 (555) 123-4567",
-        dob: new Date("1985-04-23"),
-        status: "Active",
-        registeredDate: new Date("2023-01-15"),
-      },
-    ]);
+    loadPatients();
   }, []);
 
   const handleRowClick = (patient: Patient) => {
@@ -80,26 +78,52 @@ const PatientsDashboard = () => {
     route.push("/");
   };
 
-  const handleUpdate = async (values: any) => {
+  const handleUpdate = async (values: Patient) => {
+    if (!selectedPatient) return;
+
     try {
-      // Simulated API call
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      const updatedPatient = {
+        id: selectedPatient.id,
+        name: values.name,
+        email: values.email,
+        phone: values.phone,
+        dob: dayjs(values.dob).toDate(),
+        gender: values.gender,
+        address: values.address,
+        medicalHistory: values.medicalHistory,
+        status: values.status,
+        registeredDate: selectedPatient.registeredDate,
+      };
 
-      setPatients((prev) =>
-        prev.map((p) =>
-          p.id === selectedPatient?.id
-            ? { ...p, ...values, dob: values.dob.toDate() } // Keep existing 'id'
-            : p
-        )
-      );
-
-      message.success("Patient updated successfully");
-      setIsModalVisible(false);
+      const success = await updatePatient(updatedPatient);
+      if (success) {
+        message.success("Patient updated successfully");
+        setIsModalVisible(false);
+        loadPatients(); // Refresh patient list
+      } else {
+        message.error(updateError || "Failed to update patient");
+      }
     } catch (error) {
       message.error("Error updating patient");
     }
   };
 
+  const handleDelete = async () => {
+    if (!selectedPatient) return;
+
+    try {
+      const success = await deletePatient(selectedPatient.id);
+      if (success) {
+        message.success("Patient deleted successfully");
+        setIsModalVisible(false);
+        loadPatients();
+      } else {
+        message.error(deleteError || "Failed to delete patient");
+      }
+    } catch (error) {
+      message.error("Error deleting patient");
+    }
+  };
   return (
     <div className={styles.wrap}>
       <div className={styles.head}>
@@ -116,13 +140,13 @@ const PatientsDashboard = () => {
       </div>
       <div className={styles.body}>
         <Table
-          dataSource={patients}
+          dataSource={patients as readonly Patient[]}
           locale={{
             emptyText: <span className="text-gray-500">No patients found</span>,
           }}
           rowKey={(record) => record.id}
           loading={!patients.length}
-          onRow={(record) => ({
+          onRow={(record: Patient) => ({
             onClick: () => handleRowClick(record),
           })}
           className="cursor-pointer"
@@ -193,8 +217,10 @@ const PatientsDashboard = () => {
         </Table>
 
         <Modal
+          className={styles.modal}
+          centered
           title={
-            <span className="text-lg font-semibold">Edit Patient Details</span>
+            <span className={styles.modalTitle}>Edit Patient Details</span>
           }
           open={isModalVisible}
           onCancel={() => setIsModalVisible(false)}
@@ -245,6 +271,39 @@ const PatientsDashboard = () => {
             </Form.Item>
 
             <Form.Item
+              label="Gender"
+              name="gender"
+              rules={[{ required: false, message: "Please select gender" }]}
+            >
+              <Select
+                options={[
+                  { value: "male", label: "Male" },
+                  { value: "female", label: "Female" },
+                  { value: "other", label: "Other" },
+                ]}
+                allowClear
+              />
+            </Form.Item>
+
+            <Form.Item
+              label="Address"
+              name="address"
+              rules={[{ required: false, message: "Please enter address" }]}
+            >
+              <TextArea rows={3} />
+            </Form.Item>
+
+            <Form.Item
+              label="Medical History"
+              name="medicalHistory"
+              rules={[
+                { required: false, message: "Please enter medical history" },
+              ]}
+            >
+              <TextArea rows={4} />
+            </Form.Item>
+
+            <Form.Item
               label="Status"
               name="status"
               rules={[{ required: true, message: "Please select status" }]}
@@ -258,11 +317,24 @@ const PatientsDashboard = () => {
               />
             </Form.Item>
 
-            <div className="flex justify-end gap-4 mt-6">
+            <div className={styles.buttonsWrap}>
               <Button onClick={() => setIsModalVisible(false)}>Cancel</Button>
-              <Button type="primary" htmlType="submit">
-                Update Patient
-              </Button>
+              <div className={styles.rightButton}>
+                <Button
+                  loading={updateLoading}
+                  type="primary"
+                  htmlType="submit"
+                >
+                  Update Patient
+                </Button>
+                <Button
+                  className={styles.delete}
+                  onClick={handleDelete}
+                  loading={deleteLoading}
+                >
+                  Delete
+                </Button>
+              </div>
             </div>
           </Form>
         </Modal>
@@ -271,4 +343,4 @@ const PatientsDashboard = () => {
   );
 };
 
-export default PatientsDashboard;
+export default MyDetails;

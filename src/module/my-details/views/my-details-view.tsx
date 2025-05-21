@@ -1,7 +1,7 @@
-import PatientsDashboard from "../components/my-details";
+import MyDetails from "../components/my-details";
 
 const MyDetailsView = () => {
-  return <PatientsDashboard />;
+  return <MyDetails />;
 };
 
 export default MyDetailsView;
