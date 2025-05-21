@@ -1,10 +1,13 @@
 "use client";
 import TextArea from "antd/es/input/TextArea";
 import styles from "./form-component.module.scss";
-import { Form, Button, Select } from "antd";
+import { Form, Button, Select, App } from "antd";
 import dynamic from "next/dynamic";
 import { useRouter } from "nextjs-toploader/app";
 import { logout } from "@/module/auth/service/auth";
+import { useRegisterPatient } from "../../services/patient-register-service";
+import dayjs from "dayjs";
+const { useApp } = App;
 
 const Input = dynamic(() => import("antd").then((mod) => mod.Input), {
   ssr: false,
@@ -13,13 +16,41 @@ const DatePicker = dynamic(() => import("antd").then((mod) => mod.DatePicker), {
   ssr: false,
 });
 
+interface RegisterPatientInput {
+  fullName: string;
+  email: string;
+  phone: string;
+  dob: dayjs.Dayjs;
+  gender?: string;
+  address?: string;
+  medicalHistory?: string;
+}
 const FormComponent = () => {
   const [form] = Form.useForm();
   const router = useRouter();
+  const { loading, error, registerPatient } = useRegisterPatient();
+  const { message } = useApp();
+  const onFinish = async (values: RegisterPatientInput) => {
+    try {
+      const success = await registerPatient({
+        fullName: values.fullName,
+        email: values.email,
+        phone: values.phone,
+        dob: values.dob,
+        gender: values.gender,
+        address: values.address,
+        medicalHistory: values.medicalHistory,
+      });
 
-  const onFinish = (values: any) => {
-    console.log("Received values:", values);
-    // Add your submission logic here
+      if (success) {
+        form.resetFields();
+        message.success("Patient registered successfully!");
+      } else {
+        message.error(error || "Failed to register patient");
+      }
+    } catch (err) {
+      message.error("An unexpected error occurred");
+    }
   };
 
   const handleListPatient = () => {
