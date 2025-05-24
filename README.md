@@ -99,7 +99,7 @@ Follow these steps to set up and run the project locally.
 
 ## Deployment
 The app is deployed to Vercel for public access at:  
-**[https://patient-registration-app.vercel.app](https://patient-registration-app.vercel.app)** *(Replace with actual URL after deployment)*.
+**[https://patient-care-three.vercel.app](https://patient-care-three.vercel.app)** 
 
 ### Deployment Steps
 1. **Push to GitHub**:

@@ -65,14 +65,8 @@ const MyDetails = () => {
   }, []);
 
   useEffect(() => {
-    if (updateError) {
-      message.error(updateError);
-    } else if (deleteError) {
-      message.error(deleteError);
-    } else if (error) {
+    if (error) {
       message.error(error);
-    } else {
-      message.error("Something went wrong");
     }
   }, [updateError, error, deleteError]);
 

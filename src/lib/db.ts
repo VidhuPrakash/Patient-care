@@ -7,10 +7,10 @@ let db: PGliteWorker | null = null;
 
 /**
  * Retrieves a singleton instance of the PGliteWorker for database operations.
- * 
+ *
  * @throws Will throw an error if attempted to access on the server side.
  * @throws Will throw an error if the PGlite worker fails to initialize.
- * 
+ *
  * @returns {PGliteWorker} The PGliteWorker instance managing the database connection.
  */
 
@@ -38,7 +38,7 @@ export function getDB() {
 /**
  * Initializes the PGlite database by creating tables if they don't exist.
  * It also seeds a default user if no users are found in the database.
- * 
+ *
  * @throws Throws an error if the database initialization fails.
  */
 export async function initializeDB() {

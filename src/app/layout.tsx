@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Geist } from "next/font/google";
+import { Poppins } from "next/font/google";
 import "./globals.css";
 import { AntdRegistry } from "@ant-design/nextjs-registry";
 import NextTopLoader from "nextjs-toploader";
@@ -7,7 +7,8 @@ import { ConfigProvider } from "antd";
 import "@ant-design/v5-patch-for-react-19";
 import { App as AntdApp } from "antd";
 
-const geistSans = Geist({
+const popins = Poppins({
+  weight: ["400", "500", "600", "700"],
   variable: "--font-geist-sans",
   subsets: ["latin"],
 });
@@ -23,22 +24,22 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <ConfigProvider
-        theme={{
-          token: {
-            colorPrimary: "#6F826A",
-          },
-        }}
-      >
-        <body className={`${geistSans.variable}`}>
+      <body className={`${popins.variable}`}>
+        <ConfigProvider
+          theme={{
+            token: {
+              colorPrimary: "#6F826A",
+            },
+          }}
+        >
           <NextTopLoader color="#6F826A" crawlSpeed={20} />
           <AntdRegistry>
             <AntdApp notification={{ placement: "topRight" }}>
               {children}
             </AntdApp>
           </AntdRegistry>
-        </body>
-      </ConfigProvider>
+        </ConfigProvider>
+      </body>
     </html>
   );
 }
