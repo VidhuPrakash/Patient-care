@@ -1,10 +1,12 @@
 "use client";
-import { db } from "@/lib/db";
+import { getDB } from "@/lib/db";
 import Cookies from "js-cookie";
 import { v4 as uuidv4 } from "uuid";
 
 // Login and set session cookie
 export async function login(email: string, password: string): Promise<boolean> {
+      const db = getDB();
+  
   try {
     const { rows } = await db.query(
       "SELECT * FROM users WHERE email = $1 AND password = $2",

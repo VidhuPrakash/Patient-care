@@ -1,22 +1,58 @@
-import { PGlite } from "@electric-sql/pglite";
+"use client";
+
 import { Patient, RawPatient } from "./types";
+import { PGliteWorker } from "@electric-sql/pglite/worker";
 
-// Initialize PGlite with IndexedDB for persistence
-export const db = new PGlite("idb://patient-registration-app");
+let db: PGliteWorker | null = null;
 
-// Initialize database tables
+/**
+ * Retrieves a singleton instance of the PGliteWorker for database operations.
+ * 
+ * @throws Will throw an error if attempted to access on the server side.
+ * @throws Will throw an error if the PGlite worker fails to initialize.
+ * 
+ * @returns {PGliteWorker} The PGliteWorker instance managing the database connection.
+ */
+
+export function getDB() {
+  if (typeof window === "undefined") {
+    throw new Error("Database can only be accessed on the client side");
+  }
+  if (!db) {
+    try {
+      const worker = new Worker(
+        new URL("./pglite-worker.ts", import.meta.url),
+        {
+          type: "module",
+        }
+      );
+      db = new PGliteWorker(worker);
+    } catch (error) {
+      console.error("Failed to initialize PGlite worker:", error);
+      throw error;
+    }
+  }
+  return db;
+}
+
+/**
+ * Initializes the PGlite database by creating tables if they don't exist.
+ * It also seeds a default user if no users are found in the database.
+ * 
+ * @throws Throws an error if the database initialization fails.
+ */
 export async function initializeDB() {
+  const dbInstance = getDB();
+
   try {
-    // Create users table
-    await db.query(`
+    await dbInstance.query(`
 CREATE TABLE IF NOT EXISTS users (
 email TEXT PRIMARY KEY,
 password TEXT NOT NULL
 );
 `);
 
-    // Create patients table
-    await db.query(`
+    await dbInstance.query(`
 CREATE TABLE IF NOT EXISTS patients (
 id SERIAL PRIMARY KEY,
 name TEXT NOT NULL,
@@ -32,13 +68,13 @@ registered_date DATE NOT NULL
 `);
 
     // Seed default user if none exists
-    const { rows } = await db.query("SELECT COUNT(*) FROM users");
+    const { rows } = await dbInstance.query("SELECT COUNT(*) FROM users");
     const count = (rows[0] as { count: number }).count;
     if (count === 0) {
-      await db.query("INSERT INTO users (email, password) VALUES ($1, $2)", [
-        "info@admin.com",
-        "password",
-      ]);
+      await dbInstance.query(
+        "INSERT INTO users (email, password) VALUES ($1, $2)",
+        ["info@admin.com", "password"]
+      );
     }
   } catch (error) {
     console.error("Database initialization error:", error);
@@ -46,9 +82,18 @@ registered_date DATE NOT NULL
   }
 }
 
+/**
+ * Fetch all patients from the database.
+ *
+ * @returns An array of Patient objects. If a database error occurs, an empty
+ * array is returned.
+ */
 export async function fetchPatients(): Promise<Patient[]> {
+  const dbInstance = getDB();
   try {
-    const { rows } = await db.query<RawPatient>("SELECT * FROM patients");
+    const { rows } = await dbInstance.query<RawPatient>(
+      "SELECT * FROM patients"
+    );
     return rows.map((row) => ({
       id: Number(row.id),
       name: row.name,

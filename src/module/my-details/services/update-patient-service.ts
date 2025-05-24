@@ -1,6 +1,7 @@
 import { useState } from "react";
-import { db } from "../../../lib/db";
+import { getDB } from "../../../lib/db";
 import { Patient } from "../../../lib/types";
+import { patientChannel } from "@/lib/broadcast";
 
 interface UpdatePatientResult {
   updatePatient: (patient: Patient) => Promise<boolean>;
@@ -17,11 +18,18 @@ export function useUpdatePatient(): UpdatePatientResult {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  /**
+   * Updates a patient in the database and broadcasts the event to other tabs
+   * @param patient The patient to update
+   * @returns A boolean indicating if the update was successful
+   */
   const updatePatient = async (patient: Patient): Promise<boolean> => {
     setLoading(true);
     setError(null);
+    const db = getDB();
 
     try {
+      await db.query("BEGIN");
       await db.query(
         `
         UPDATE patients
@@ -48,9 +56,16 @@ export function useUpdatePatient(): UpdatePatientResult {
           patient.id,
         ]
       );
+      await db.query("COMMIT");
+
+      patientChannel.postMessage({
+        type: "PATIENT_UPDATED",
+        patientId: patient.id,
+      });
 
       return true;
     } catch (err) {
+      await db.query("ROLLBACK");
       console.error("Update patient error:", err);
       const errorMessage =
         err instanceof Error ? err.message : "Failed to update patient";

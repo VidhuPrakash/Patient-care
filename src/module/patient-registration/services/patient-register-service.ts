@@ -1,10 +1,8 @@
-"use client";
-
 import { useState } from "react";
-import { db } from "../../../lib/db";
+import { getDB } from "../../../lib/db";
 import { Patient } from "../../../lib/types";
-import { v4 as uuidv4 } from "uuid";
 import dayjs from "dayjs";
+import { patientChannel } from "@/lib/broadcast";
 
 interface RegisterPatientInput {
   fullName: string;
@@ -22,17 +20,34 @@ interface RegisterPatientResult {
   registerPatient: (input: RegisterPatientInput) => Promise<boolean>;
 }
 
+/**
+ * Custom hook to handle patient registration.
+ *
+ * @returns An object containing:
+ * - `loading`: A boolean indicating if the registration is in progress.
+ * - `error`: A string representing the error message if the registration fails, or null if no error.
+ * - `registerPatient`: An async function that takes `RegisterPatientInput` and returns a boolean indicating if the registration was successful.
+ */
+
 export function useRegisterPatient(): RegisterPatientResult {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  /**
+   * Registers a patient and broadcasts the event to other tabs
+   * @param input The patient registration input
+   * @returns A boolean indicating if the registration was successful
+   */
   const registerPatient = async (
     input: RegisterPatientInput
   ): Promise<boolean> => {
     setLoading(true);
     setError(null);
+    const db = getDB();
 
     try {
+      await db.query("BEGIN");
+
       const patient: Patient & { registered_date: Date } = {
         name: input.fullName,
         email: input.email,
@@ -64,10 +79,12 @@ export function useRegisterPatient(): RegisterPatientResult {
           patient.registered_date,
         ]
       );
+      await db.query("COMMIT");
+      patientChannel.postMessage({ type: "PATIENT_REGISTERED" });
 
       return true;
     } catch (err) {
-
+      await db.query("ROLLBACK");
       const errorMessage =
         err instanceof Error ? err.message : "Failed to register patient";
       setError(errorMessage);

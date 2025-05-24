@@ -30,6 +30,16 @@ const FormComponent = () => {
   const router = useRouter();
   const { loading, error, registerPatient } = useRegisterPatient();
   const { message } = useApp();
+
+  /**
+   * Handles the submission of the patient registration form.
+   * Attempts to register a patient using the provided form values.
+   * Displays a success message if registration is successful and resets the form.
+   * Displays an error message if registration fails or an unexpected error occurs.
+   *
+   * @param values - The form values for patient registration.
+   */
+
   const onFinish = async (values: RegisterPatientInput) => {
     try {
       const success = await registerPatient({
@@ -53,10 +63,17 @@ const FormComponent = () => {
     }
   };
 
+  /**
+   * Navigates to the /dashboard route, which shows the list of registered
+   * patients.
+   */
   const handleListPatient = () => {
     router.push("/dashboard");
   };
 
+  /**
+   * Logs the user out and redirects them to the login page
+   */
   const handleLogout = async () => {
     await logout();
     router.push("/");
@@ -169,6 +186,7 @@ const FormComponent = () => {
               type="primary"
               htmlType="submit"
               size="large"
+              loading={loading}
             >
               Register
             </Button>

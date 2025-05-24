@@ -1,6 +1,7 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Patient } from "../../../lib/types";
 import { fetchPatients } from "@/lib/db";
+import { patientChannel } from "@/lib/broadcast";
 
 interface ListPatientsResult {
   patients: Patient[];
@@ -18,6 +19,15 @@ export function useListPatients(): ListPatientsResult {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  /**
+   * Fetches the list of patients from the database and updates the local state.
+   * If an error occurs during the fetch, logs the error, sets an error message,
+   * and clears the patients list.
+   *
+   * Sets loading state to true before starting the fetch and sets it to false
+   * once the fetch is completed, whether successful or not.
+   */
+
   const loadPatients = async () => {
     try {
       setLoading(true);
@@ -34,6 +44,29 @@ export function useListPatients(): ListPatientsResult {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    loadPatients();
+
+    // Listen for patient events from other tabs
+    const handlePatientEvent = (event: MessageEvent) => {
+      if (
+        event.data.type === "PATIENT_REGISTERED" ||
+        event.data.type === "PATIENT_UPDATED" ||
+        event.data.type === "PATIENT_DELETED"
+      ) {
+        setTimeout(() => {
+          loadPatients();
+        }, 100);
+      }
+    };
+
+    patientChannel.addEventListener("message", handlePatientEvent);
+
+    return () => {
+      patientChannel.removeEventListener("message", handlePatientEvent);
+    };
+  }, []);
 
   return { patients, loading, error, loadPatients };
 }

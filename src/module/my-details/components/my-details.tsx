@@ -59,10 +59,31 @@ const MyDetails = () => {
   const [form] = Form.useForm();
   const route = useRouter();
   const { message } = useApp();
-  // Simulated data fetch
+
   useEffect(() => {
     loadPatients();
   }, []);
+
+  useEffect(() => {
+    if (updateError) {
+      message.error(updateError);
+    } else if (deleteError) {
+      message.error(deleteError);
+    } else if (error) {
+      message.error(error);
+    } else {
+      message.error("Something went wrong");
+    }
+  }, [updateError, error, deleteError]);
+
+  /**
+   * Handles the click event on a table row, setting the selected patient
+   * and populating the form with the patient's details. It also converts
+   * the patient's date of birth to a dayjs object for form compatibility
+   * and displays the modal for editing patient details.
+   *
+   * @param patient The patient object whose row was clicked
+   */
 
   const handleRowClick = (patient: Patient) => {
     setSelectedPatient(patient);
@@ -73,11 +94,21 @@ const MyDetails = () => {
     setIsModalVisible(true);
   };
 
+  /**
+   * Logs the user out and redirects them to the login page
+   */
   const handleLogout = async () => {
     await logout();
     route.push("/");
   };
 
+  /**
+   * Handles the submission of the edit patient form, updating the
+   * selected patient in the database and displaying a success or
+   * error message accordingly. It also reloads the patient list
+   * after a successful update.
+   * @param values The updated patient details
+   */
   const handleUpdate = async (values: Patient) => {
     if (!selectedPatient) return;
 
@@ -99,7 +130,7 @@ const MyDetails = () => {
       if (success) {
         message.success("Patient updated successfully");
         setIsModalVisible(false);
-        loadPatients(); // Refresh patient list
+        loadPatients();
       } else {
         message.error(updateError || "Failed to update patient");
       }
@@ -108,6 +139,11 @@ const MyDetails = () => {
     }
   };
 
+  /**
+   * Handles the deletion of the selected patient from the database and
+   * displays a success or error message accordingly. It also reloads the
+   * patient list after a successful deletion.
+   */
   const handleDelete = async () => {
     if (!selectedPatient) return;
 
@@ -124,6 +160,8 @@ const MyDetails = () => {
       message.error("Error deleting patient");
     }
   };
+
+  const tableKey = patients.map((p) => p.id).join("-");
   return (
     <div className={styles.wrap}>
       <div className={styles.head}>
@@ -140,12 +178,13 @@ const MyDetails = () => {
       </div>
       <div className={styles.body}>
         <Table
+          key={tableKey}
           dataSource={patients as readonly Patient[]}
           locale={{
             emptyText: <span className="text-gray-500">No patients found</span>,
           }}
           rowKey={(record) => record.id}
-          loading={!patients.length}
+          loading={loading}
           onRow={(record: Patient) => ({
             onClick: () => handleRowClick(record),
           })}
