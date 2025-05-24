@@ -23,7 +23,6 @@ This project demonstrates a modern, client-side approach to managing patient dat
 - **Multi-Tab Synchronization**: Ensures real-time updates across browser tabs using PGlite's multi-tab worker and BroadcastChannel.
 - **Patient Management**: View, update, and delete patient records through an intuitive Ant Design-based UI.
 - **Client-Side Only**: Runs entirely in the browser, eliminating the need for a backend server.
-- **Responsive Design**: Styled with SCSS and Ant Design for a modern, user-friendly interface.
 - **Error Handling**: Robust error handling for database operations and user input validation.
 
 ## Tech Stack
@@ -32,7 +31,6 @@ This project demonstrates a modern, client-side approach to managing patient dat
 - **Ant Design**: UI component library for forms, tables, and modals.
 - **SCSS**: CSS preprocessor for modular styling.
 - **BroadcastChannel**: Browser API for synchronizing data across tabs.
-- **Day.js**: Lightweight library for date manipulation.
 - **TypeScript**: Ensures type safety for database operations and UI components.
 
 ## Setup Instructions
